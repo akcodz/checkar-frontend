@@ -113,7 +113,7 @@ export default function LoginPage() {
                                          className="h-14 w-auto group-hover:opacity-90 transition-opacity"
                                        />
                                      </Link>
-					</div>
+					
 
 					{/* Hero Message - PPT Aligned */}
 					<h1 className="text-3xl lg:text-4xl font-semibold text-text-primary leading-tight mb-4">
