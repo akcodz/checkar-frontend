@@ -14,6 +14,12 @@ export const getJobs = async (params = {}) => {
   return res.data;
 };
 
+export const getLogs = async (id) => {
+  const url = `${JOB_SERVICE_BASE.replace(/\/+$/, "")}/job/${id}/logs`;
+  const res = await http.get(url);
+  return res.data;
+};
+
 export const getJobById = async (id) => {
   const url = `${JOB_SERVICE_BASE.replace(/\/+$/, "")}/job/${id}`;
   const res = await http.get(url);

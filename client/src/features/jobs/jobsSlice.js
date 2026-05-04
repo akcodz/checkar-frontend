@@ -19,6 +19,19 @@ export const fetchJobById = createAsyncThunk("jobs/fetchJobById", async (id) => 
 	return res?.data ?? res;
 });
 
+export const fetchLogs = createAsyncThunk(
+	"jobs/fetchLogs",
+	async (id, { rejectWithValue }) => {
+		try {
+			const res = await jobsApi.getLogs(id);
+
+			return res?.data?.data || []; // ✅ extract logs array directly
+		} catch (err) {
+			return rejectWithValue(err.response?.data || "Failed to fetch logs");
+		}
+	}
+);
+
 export const deleteJob = createAsyncThunk("jobs/deleteJob", async (id) => {
 	await jobsApi.deleteJob(id);
 	return id;
@@ -32,6 +45,7 @@ export const updateJob = createAsyncThunk("jobs/updateJob", async ({ id, data })
 const initialState = {
 	jobs: [],
 	activeJob: null,
+	logs: [],
 	pagination: { page: 1, total: 0, totalPages: 1 },
 	loading: false,
 	error: null,
@@ -62,6 +76,20 @@ const jobsSlice = createSlice({
 			.addCase(fetchJobs.rejected, (state, action) => {
 				state.loading = false;
 				state.error = action.error.message ?? null;
+			})
+			.addCase(fetchLogs.pending, (state) => {
+				state.loading = true;
+				state.error = null;
+			})
+
+			.addCase(fetchLogs.fulfilled, (state, action) => {
+				state.loading = false;
+				state.logs = action.payload;
+			})
+
+			.addCase(fetchLogs.rejected, (state, action) => {
+				state.loading = false;
+				state.error = action.payload || action.error.message;
 			})
 			.addCase(fetchJobById.pending, (state) => {
 				state.loading = true;

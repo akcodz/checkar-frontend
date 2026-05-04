@@ -93,9 +93,6 @@ const AlertBanner = ({ jobs }) => {
             {critical.title} is currently unreachable. Latency spiked before timeout.
           </div>
         </div>
-        <button className="rounded-full border border-status-error/50 bg-bg-elevated px-4 py-2 text-xs font-mono uppercase tracking-widest text-status-error hover:bg-bg-surface transition">
-          View logs
-        </button>
       </div>
     </div>
   )
