@@ -122,13 +122,13 @@ export default function RegisterPage() {
           {/* Brand Content - PPT Aligned */}
           <div className="relative z-10 flex flex-col justify-center px-12 lg:px-16">
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 11.3l6.75 3.884 6.75-3.885M8 34.58v-7.755L1.25 22.94m27 0-6.75 3.885v7.754" stroke="currentColor" className="text-primary" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M1.655 15.408l13.095 7.546 13.095-7.546M14.75 38V22.939" stroke="currentColor" className="text-primary" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-              <span className="text-2xl font-semibold text-text-primary">Checker</span>
-            </div>
+                <Link to="/" className="flex items-center gap-2 group">
+                                       <img
+                                         src="/logo.png"
+                                         alt="Checker Logo"
+                                         className="h-14 w-auto group-hover:opacity-90 transition-opacity"
+                                       />
+                                     </Link>
 
             {/* Hero Message */}
             <h1 className="text-3xl lg:text-4xl font-semibold text-text-primary leading-tight mb-4">
