@@ -129,7 +129,7 @@ const TopBar = ({ onMenuToggle }) => {
           </button>
           
           {showNotifications && (
-            <div className="absolute right-0 z-50 mt-2 w-80 rounded-card border border-bg-border bg-bg-base p-3 shadow-lg">
+            <div className="absolute right-0 z-50 mt-2 w-64 rounded-card border border-bg-border bg-bg-base p-3 shadow-lg sm:w-80">
               <p className="mb-2 text-xs uppercase tracking-wider text-text-muted">
                 Notifications {unreadCount > 0 && `(${unreadCount} new)`}
               </p>
