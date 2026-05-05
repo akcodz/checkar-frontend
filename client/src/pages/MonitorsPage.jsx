@@ -1,38 +1,43 @@
 // src/pages/MonitorsPage.jsx
-import { useEffect, useMemo, useRef, useState } from "react"
-import { createPortal } from "react-dom"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
-import toast from "react-hot-toast"
-import { deleteJob, fetchJobs, updateJob } from "../features/jobs/jobsSlice"
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { deleteJob, fetchJobs, updateJob } from "../features/jobs/jobsSlice";
 
-const filterOptions = ["all", "api", "server", "ssl", "port", "frontend"]
+const filterOptions = ["all", "api", "server", "ssl", "port", "frontend"];
 
 // Status classes using semantic palette
 const statusClasses = {
   up: "bg-status-success/10 text-status-success border border-status-success/30",
   down: "bg-status-error/10 text-status-error border border-status-error/30",
-  pending: "bg-status-warning/10 text-status-warning border border-status-warning/30",
-}
+  pending:
+    "bg-status-warning/10 text-status-warning border border-status-warning/30",
+};
 
 const truncate = (value, length = 35) => {
-  if (!value) return "-"
-  return value.length > length ? `${value.slice(0, length)}...` : value
-}
+  if (!value) return "-";
+  return value.length > length ? `${value.slice(0, length)}...` : value;
+};
 
 const getIntervalLabel = (interval = 0) => {
-  if (interval >= 86400) return "daily"
-  if (interval >= 3600) return `${Math.round(interval / 3600)}h`
-  if (interval >= 60) return `${Math.round(interval / 60)}m`
-  return `${interval}s`
-}
+  if (interval >= 86400) return "daily";
+  if (interval >= 3600) return `${Math.round(interval / 3600)}h`;
+  if (interval >= 60) return `${Math.round(interval / 60)}m`;
+  return `${interval}s`;
+};
 
-const buildUptimeBars = () => Array.from({ length: 16 }, (_, index) => index)
+const buildUptimeBars = () => Array.from({ length: 16 }, (_, index) => index);
 
 const SummaryCard = ({ label, value, sub, accent = "bg-primary" }) => (
   <div className="rounded-card border border-bg-border bg-bg-base p-5">
-    <div className="text-[11px] uppercase tracking-[0.35em] text-text-muted">{label}</div>
-    <div className="mt-3 font-mono text-4xl font-semibold text-text-primary">{value}</div>
+    <div className="text-[11px] uppercase tracking-[0.35em] text-text-muted">
+      {label}
+    </div>
+    <div className="mt-3 font-mono text-4xl font-semibold text-text-primary">
+      {value}
+    </div>
     <div className="mt-2 text-xs text-text-muted">{sub}</div>
     {label.toLowerCase().includes("uptime") && (
       <div className="mt-4 flex gap-1">
@@ -47,30 +52,30 @@ const SummaryCard = ({ label, value, sub, accent = "bg-primary" }) => (
       </div>
     )}
   </div>
-)
+);
 
 const MonitorsPage = () => {
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const jobs = useSelector((state) => state.jobs.jobs)
-  const pagination = useSelector((state) => state.jobs.pagination)
-  const loading = useSelector((state) => state.jobs.loading)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const jobs = useSelector((state) => state.jobs.jobs);
+  const pagination = useSelector((state) => state.jobs.pagination);
+  const loading = useSelector((state) => state.jobs.loading);
 
-  const [activeFilter, setActiveFilter] = useState("all")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
-  const [openMenuId, setOpenMenuId] = useState(null)
-  const menuBtnRefs = useRef({})
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuBtnRefs = useRef({});
 
   const getMenuPosition = () => {
-    if (!openMenuId || !menuBtnRefs.current[openMenuId]) return null
-    const rect = menuBtnRefs.current[openMenuId].getBoundingClientRect()
-    return { top: rect.bottom + 4, left: rect.right - 176 }
-  }
+    if (!openMenuId || !menuBtnRefs.current[openMenuId]) return null;
+    const rect = menuBtnRefs.current[openMenuId].getBoundingClientRect();
+    return { top: rect.bottom + 4, left: rect.right - 176 };
+  };
 
   useEffect(() => {
-    dispatch(fetchJobs({ page: pagination.page ?? 1, limit: 10 }))
-  }, [dispatch, pagination.page])
+    dispatch(fetchJobs({ page: pagination.page ?? 1, limit: 10 }));
+  }, [dispatch, pagination.page]);
 
   const filtered = useMemo(
     () =>
@@ -82,45 +87,50 @@ const MonitorsPage = () => {
             job.url?.toLowerCase().includes(searchQuery.toLowerCase()),
         ),
     [activeFilter, jobs, searchQuery],
-  )
+  );
 
   const handleDelete = async () => {
-    if (!deleteConfirmId) return
-    await dispatch(deleteJob(deleteConfirmId))
-    toast.success("Monitor deleted")
-    setDeleteConfirmId(null)
-  }
+    if (!deleteConfirmId) return;
+    await dispatch(deleteJob(deleteConfirmId));
+    toast.success("Monitor deleted");
+    setDeleteConfirmId(null);
+  };
 
   const handleToggleActive = (job) => {
-    dispatch(updateJob({ id: job._id, data: { isActive: !job.isActive } }))
-    setOpenMenuId(null)
-  }
+    dispatch(updateJob({ id: job._id, data: { isActive: !job.isActive } }));
+    setOpenMenuId(null);
+  };
 
   const handlePageChange = (newPage) => {
-    dispatch(fetchJobs({ page: newPage, limit: 10 }))
-  }
+    dispatch(fetchJobs({ page: newPage, limit: 10 }));
+  };
 
-  const total = jobs.length
-  const up = jobs.filter((job) => job.lastStatus === "up").length
-  const active = jobs.filter((job) => job.isActive).length
+  const total = jobs.length;
+  const up = jobs.filter((job) => job.lastStatus === "up").length;
+  const active = jobs.filter((job) => job.isActive).length;
   const avgLatency = total
-    ? Math.round(jobs.reduce((sum, job) => sum + (job.lastLatency || 0), 0) / total)
-    : 0
+    ? Math.round(
+        jobs.reduce((sum, job) => sum + (job.lastLatency || 0), 0) / total,
+      )
+    : 0;
 
   return (
     <div className="min-h-screen bg-bg-base p-6 text-text-primary">
       <div className="mx-auto max-w-7xl space-y-6">
-        
         {/* Header + Search + CTA */}
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-text-muted">System Monitors</div>
-            <h1 className="mt-2 text-3xl font-semibold text-text-primary">Monitor inventory</h1>
+            <div className="text-xs uppercase tracking-[0.3em] text-text-muted">
+              System Monitors
+            </div>
+            <h1 className="mt-2 text-3xl font-semibold text-text-primary">
+              Monitor inventory
+            </h1>
             <p className="mt-2 text-sm text-text-secondary">
               Manage and inspect every endpoint currently being observed.
             </p>
           </div>
-          
+
           <div className="flex flex-col gap-3 sm:flex-row">
             {/* Search Input - Unified Dark */}
             <div className="relative">
@@ -130,11 +140,18 @@ const MonitorsPage = () => {
                 placeholder="Search systems..."
                 className="w-full rounded-card border border-bg-border bg-bg-base px-4 py-2 pl-10 text-sm text-text-primary placeholder-text-muted/60 outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition sm:w-80"
               />
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
             </div>
-            
+
             {/* Add Monitor CTA */}
             <button
               type="button"
@@ -165,108 +182,337 @@ const MonitorsPage = () => {
         </div>
 
         {/* Table Container - Unified Dark */}
-        <div className="overflow-x-auto rounded-card border border-bg-border bg-bg-base">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                {[
-                  "Name", "Type", "URL/Host", "Status", "Latency", "Checks", "Interval", "Actions",
-                ].map((column) => (
-                  <th
-                    key={column}
-                    className="bg-bg-base px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-text-muted border-b border-bg-border"
-                  >
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                Array.from({ length: 4 }).map((_, index) => (
-                  <tr key={index}>
-                    <td colSpan={8} className="border-b border-bg-border px-4 py-4">
-                      <div className="h-5 w-full animate-pulse rounded bg-bg-elevated" />
-                    </td>
-                  </tr>
-                ))
-              ) : filtered.length ? (
-                filtered.map((job) => (
-                  <tr 
-                    key={job._id} 
-                    className="relative transition hover:bg-bg-elevated group"
-                  >
-                    {/* Name */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm text-text-primary">
-                      {job.title}
-                    </td>
-                    
-                    {/* Type Badge */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm">
-                      <span className={`rounded-full px-2 py-1 font-mono text-xs uppercase tracking-widest ${
-                        job.type === "api" ? "bg-primary/10 text-primary border border-primary/30" :
-                        job.type === "server" ? "bg-status-info/10 text-status-info border border-status-info/30" :
-                        job.type === "ssl" ? "bg-status-warning/10 text-status-warning border border-status-warning/30" :
-                        job.type === "port" ? "bg-status-ai/10 text-status-ai border border-status-ai/30" :
-                        job.type === "frontend" ? "bg-primary/10 text-primary border border-primary/30" :
-                        "bg-bg-elevated text-text-muted border border-bg-border"
-                      }`}>
-                        {job.type}
-                      </span>
-                    </td>
-                    
-                    {/* URL/Host */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm text-text-secondary">
-                      {job.type === "port" ? `${job.host}:${job.port}` : truncate(job.url)}
-                    </td>
-                    
-                    {/* Status Badge */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm">
-                      <span className={`rounded px-2 py-1 text-xs font-mono uppercase tracking-widest ${statusClasses[job.lastStatus] ?? statusClasses.pending}`}>
-                        {job.lastStatus}
-                      </span>
-                    </td>
-                    
-                    {/* Latency */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm font-mono text-text-secondary">
-                      {job.lastLatency ?? 0} ms
-                    </td>
-                    
-                    {/* Checks Count */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm font-mono text-text-secondary">
-                      {job.stats?.totalChecks ?? 0}
-                    </td>
-                    
-                    {/* Interval */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm font-mono text-text-secondary">
-                      {getIntervalLabel(job.interval ?? job.intervalSeconds ?? 0)}
-                    </td>
-                    
-                    {/* Actions Menu */}
-                    <td className="border-b border-bg-border px-4 py-3 text-sm">
-                      <div className="relative inline-block text-left">
-                        <button
-                          ref={(el) => { menuBtnRefs.current[job._id] = el }}
-                          type="button"
-                          onClick={() => setOpenMenuId(openMenuId === job._id ? null : job._id)}
-                          className="rounded-full border border-bg-border bg-bg-base px-3 py-1 text-sm text-text-secondary hover:text-text-primary hover:border-primary/40 transition"
-                          aria-label="Open actions menu"
+        <div>
+          {/* ================= DESKTOP TABLE ================= */}
+          <div className="flex flex-col space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+              <div>
+                <h2 className="text-2xl font-bold text-text-primary">
+                  Monitors
+                </h2>
+                <p className="text-sm text-text-muted">
+                  Real-time status of your services
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/dashboard/monitors/new")}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-primary/90 active:scale-95"
+              >
+                <span className="text-lg font-bold">+</span>
+                <span>Add Monitor</span>
+              </button>
+            </div>
+
+            <div className="rounded-card border border-bg-border bg-bg-base">
+              {/* Desktop View */}
+              <div className="hidden md:block overflow-visible">
+                {" "}
+                {/* Changed overflow-x-auto to overflow-visible */}
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      {[
+                        "Name",
+                        "Type",
+                        "URL/Host",
+                        "Status",
+                        "Latency",
+                        "Checks",
+                        "Interval",
+                        "Actions",
+                      ].map((column) => (
+                        <th
+                          key={column}
+                          className="bg-bg-base px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-text-muted border-b border-bg-border"
                         >
-                          ⋯
-                        </button>
+                          {column}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-bg-border">
+                    {!loading &&
+                      filtered.map((job) => (
+                        <tr
+                          key={job._id}
+                          className="transition hover:bg-bg-elevated/50"
+                        >
+                          <td className="px-4 py-3 text-sm text-text-primary font-medium">
+                            {job.title}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className="rounded-full px-2 py-0.5 font-mono text-[10px] uppercase border bg-primary/10 text-primary border-primary/30">
+                              {job.type}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-text-secondary">
+                            {truncate(job.url || `${job.host}:${job.port}`)}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            <span
+                              className={`rounded px-2 py-1 text-[10px] font-mono uppercase ${statusClasses[job.lastStatus] ?? statusClasses.pending}`}
+                            >
+                              {job.lastStatus}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                            {job.lastLatency ?? 0}ms
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                            {job.stats?.totalChecks ?? 0}
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-text-secondary">
+                            {getIntervalLabel(
+                              job.interval ?? job.intervalSeconds ?? 0,
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm overflow-visible">
+                            {" "}
+                            {/* Ensure cell is visible */}
+                            <div className="relative inline-block text-left">
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setOpenMenuId(
+                                    openMenuId === job._id ? null : job._id,
+                                  );
+                                }}
+                                className="rounded-full w-8 h-8 flex items-center justify-center border border-bg-border bg-bg-base hover:border-primary/40 transition"
+                              >
+                                ⋯
+                              </button>
+                              {openMenuId === job._id && (
+                                <div className="absolute right-0 z-[9999] mt-2 w-48 origin-top-right rounded-md border border-bg-border bg-bg-elevated shadow-2xl ring-1 ring-black ring-opacity-5">
+                                  <div className="py-1">
+                                    <button
+                                      onClick={() => {
+                                        navigate(
+                                          `/dashboard/monitors/${job._id}`,
+                                        );
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="block w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-base"
+                                    >
+                                      View details
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        navigate(
+                                          `/dashboard/monitors/edit/${job._id}`,
+                                        );
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="block w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-base"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => handleToggleActive(job)}
+                                      className="block w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-base"
+                                    >
+                                      {job.isActive
+                                        ? "Pause monitor"
+                                        : "Resume monitor"}
+                                    </button>
+                                    <div className="my-1 border-t border-bg-border" />
+                                    <button
+                                      onClick={() => {
+                                        handleDelete(job._id);
+                                        setOpenMenuId(null);
+                                      }}
+                                      className="block w-full px-4 py-2 text-left text-sm text-status-error hover:bg-bg-base font-medium"
+                                    >
+                                      Delete monitor
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden divide-y divide-bg-border overflow-visible">
+                {!loading &&
+                  filtered.map((job) => (
+                    <div
+                      key={job._id}
+                      className="p-4 space-y-4 hover:bg-bg-elevated transition relative"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="max-w-[80%]">
+                          <div className="text-sm font-bold text-text-primary truncate">
+                            {job.title}
+                          </div>
+                          <div className="text-xs text-text-secondary break-all mt-1">
+                            {job.url || `${job.host}:${job.port}`}
+                          </div>
+                        </div>
+
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setOpenMenuId(
+                                openMenuId === job._id ? null : job._id,
+                              );
+                            }}
+                            className="p-2 -mr-2 text-xl text-text-secondary hover:text-primary transition-colors"
+                          >
+                            ⋯
+                          </button>
+
+                          {openMenuId === job._id && (
+                            <div className="absolute right-0 z-[9999] mt-2 w-48 origin-top-right rounded-lg border border-bg-border bg-bg-elevated shadow-2xl ring-1 ring-black/10">
+                              <div className="py-1">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/dashboard/monitors/${job._id}`);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="flex w-full px-4 py-3 text-left text-sm text-text-primary active:bg-bg-base"
+                                >
+                                  View details
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(
+                                      `/dashboard/monitors/edit/${job._id}`,
+                                    );
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="flex w-full px-4 py-3 text-left text-sm text-text-primary active:bg-bg-base"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleActive(job);
+                                  }}
+                                  className="flex w-full px-4 py-3 text-left text-sm text-text-primary active:bg-bg-base"
+                                >
+                                  {job.isActive
+                                    ? "Pause monitor"
+                                    : "Resume monitor"}
+                                </button>
+                                <div className="my-1 border-t border-bg-border" />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(job._id);
+                                    setOpenMenuId(null);
+                                  }}
+                                  className="flex w-full px-4 py-3 text-left text-sm text-status-error font-medium active:bg-bg-base"
+                                >
+                                  Delete monitor
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-sm text-text-muted">
-                    No monitors match the current filters.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+
+                      <div className="grid grid-cols-2 gap-4 text-[10px] uppercase tracking-wider font-mono">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-text-muted">Status</span>
+                          <span
+                            className={`w-fit rounded px-2 py-0.5 ${statusClasses[job.lastStatus] ?? statusClasses.pending}`}
+                          >
+                            {job.lastStatus}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-text-muted">Latency</span>
+                          <span className="text-text-secondary font-bold">
+                            {job.lastLatency ?? 0} ms
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-text-muted">Type</span>
+                          <span className="text-primary font-bold">
+                            {job.type}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-text-muted">Interval</span>
+                          <span className="text-text-secondary">
+                            {getIntervalLabel(
+                              job.interval ?? job.intervalSeconds ?? 0,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ================= MOBILE CARDS ================= */}
+          <div className="md:hidden space-y-3">
+            {loading ? (
+              <div className="p-4 border rounded">Loading...</div>
+            ) : filtered?.length ? (
+              filtered.map((job) => (
+                <div key={job._id} className="p-4 border rounded space-y-2">
+                  {/* Top */}
+                  <div className="flex justify-between items-center">
+                    <div className="font-medium">{job.title}</div>
+
+                    {/* ACTION BUTTON */}
+                    <button
+                      ref={(el) => {
+                        if (!menuBtnRefs.current) {
+                          menuBtnRefs.current = {};
+                        }
+                        menuBtnRefs.current[job._id] = el;
+                      }}
+                      onClick={() => {
+                        console.log("clicked mobile", job._id);
+                        setOpenMenuId(openMenuId === job._id ? null : job._id);
+                      }}
+                      className="bg-black text-white px-3 py-1 rounded"
+                    >
+                      ⋯
+                    </button>
+                  </div>
+
+                  {/* Info */}
+                  <div className="text-sm text-gray-600">
+                    {job.type} • {job.lastStatus}
+                  </div>
+
+                  <div className="text-sm break-all">
+                    {job.type === "port" ? `${job.host}:${job.port}` : job.url}
+                  </div>
+
+                  <div className="text-xs text-gray-500 flex justify-between">
+                    <span>{job.lastLatency ?? 0} ms</span>
+                    <span>{job.stats?.totalChecks ?? 0}</span>
+                    <span>
+                      {getIntervalLabel(
+                        job.interval ?? job.intervalSeconds ?? 0,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 text-center">No data found</div>
+            )}
+          </div>
         </div>
 
         {/* Pagination - Unified Dark */}
@@ -277,7 +523,9 @@ const MonitorsPage = () => {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => handlePageChange(Math.max(1, (pagination.page ?? 1) - 1))}
+              onClick={() =>
+                handlePageChange(Math.max(1, (pagination.page ?? 1) - 1))
+              }
               className="rounded-full border border-bg-border bg-bg-base px-3 py-2 text-text-secondary hover:text-text-primary hover:border-primary/40 hover:bg-bg-elevated transition disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={(pagination.page ?? 1) <= 1}
             >
@@ -285,7 +533,14 @@ const MonitorsPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => handlePageChange(Math.min(pagination.totalPages ?? 1, (pagination.page ?? 1) + 1))}
+              onClick={() =>
+                handlePageChange(
+                  Math.min(
+                    pagination.totalPages ?? 1,
+                    (pagination.page ?? 1) + 1,
+                  ),
+                )
+              }
               className="rounded-full border border-bg-border bg-bg-base px-3 py-2 text-text-secondary hover:text-text-primary hover:border-primary/40 hover:bg-bg-elevated transition disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={(pagination.page ?? 1) >= (pagination.totalPages ?? 1)}
             >
@@ -299,8 +554,12 @@ const MonitorsPage = () => {
       {deleteConfirmId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg-base/80 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-card border border-bg-border bg-bg-base p-6 text-text-primary shadow-2xl">
-            <h2 className="text-xl font-semibold text-text-primary">Delete this monitor?</h2>
-            <p className="mt-2 text-sm text-text-secondary">All logs and history will be permanently removed.</p>
+            <h2 className="text-xl font-semibold text-text-primary">
+              Delete this monitor?
+            </h2>
+            <p className="mt-2 text-sm text-text-secondary">
+              All logs and history will be permanently removed.
+            </p>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"
@@ -322,58 +581,62 @@ const MonitorsPage = () => {
       )}
 
       {/* Actions Dropdown Menu - Unified Dark */}
-      {openMenuId && getMenuPosition() && createPortal(
-        <div
-          className="fixed z-9999 w-44 rounded-card border border-bg-border bg-bg-base p-2 shadow-lg shadow-black/40"
-          style={{ top: getMenuPosition().top, left: getMenuPosition().left }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              navigate(`/dashboard/monitors/${openMenuId}`)
-              setOpenMenuId(null)
-            }}
-            className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
+      {openMenuId &&
+        getMenuPosition() &&
+        createPortal(
+          <div
+            className="fixed z-9999 w-44 rounded-card border border-bg-border bg-bg-base p-2 shadow-lg shadow-black/40"
+            style={{ top: getMenuPosition().top, left: getMenuPosition().left }}
+            onClick={(e) => e.stopPropagation()}
           >
-            View details
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              navigate(`/dashboard/monitors/${openMenuId}/edit`)
-              setOpenMenuId(null)
-            }}
-            className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const job = jobs.find((j) => j._id === openMenuId)
-              if (job) handleToggleActive(job)
-            }}
-            className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
-          >
-            {jobs.find((j) => j._id === openMenuId)?.isActive ? "Pause monitor" : "Resume monitor"}
-          </button>
-          <hr className="my-2 border-bg-border" />
-          <button
-            type="button"
-            onClick={() => {
-              setDeleteConfirmId(openMenuId)
-              setOpenMenuId(null)
-            }}
-            className="block w-full rounded-full px-3 py-2 text-left text-sm text-status-error hover:bg-status-error/10 transition"
-          >
-            Delete monitor
-          </button>
-        </div>,
-        document.body
-      )}
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`/dashboard/monitors/${openMenuId}`);
+                setOpenMenuId(null);
+              }}
+              className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
+            >
+              View details
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`/dashboard/monitors/${openMenuId}/edit`);
+                setOpenMenuId(null);
+              }}
+              className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const job = jobs.find((j) => j._id === openMenuId);
+                if (job) handleToggleActive(job);
+              }}
+              className="block w-full rounded-full px-3 py-2 text-left text-sm text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition"
+            >
+              {jobs.find((j) => j._id === openMenuId)?.isActive
+                ? "Pause monitor"
+                : "Resume monitor"}
+            </button>
+            <hr className="my-2 border-bg-border" />
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteConfirmId(openMenuId);
+                setOpenMenuId(null);
+              }}
+              className="block w-full rounded-full px-3 py-2 text-left text-sm text-status-error hover:bg-status-error/10 transition"
+            >
+              Delete monitor
+            </button>
+          </div>,
+          document.body,
+        )}
     </div>
-  )
-}
+  );
+};
 
-export default MonitorsPage
+export default MonitorsPage;
