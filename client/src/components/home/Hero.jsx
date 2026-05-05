@@ -1,20 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import Spinner from "../ui/Spinner";
 
 const Hero = () => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const { isAuthenticated, initializing } = useSelector((s) => s.auth);
-
-  if (initializing) return <Spinner />;
+  const { isAuthenticated } = useSelector((s) => s.auth);
   const isLoggedIn = Boolean(isAuthenticated);
 
   const navLinks = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Tech Stack", href: "#tech" },
-    { label: "Docs", href: "#docs" },
+    { label: "Testimonials", href: "#testimonials" },
+    { label: "FAQ", href: "#faq" },
   ];
 
   return (
@@ -123,8 +119,8 @@ const Hero = () => {
         </div>
 
         {/* NEW Badge - AI Incident Summaries - Orange Theme */}
-        <Link
-          to="#ai-workflow"
+        <div
+          
           className="flex items-center gap-2 rounded-full border border-primary/30 bg-bg-surface/40 pl-1.5 pr-3 py-1 mt-24 md:mt-32 hover:border-primary/50 transition"
         >
           <span className="bg-primary/20 text-primary text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-primary/40">
@@ -133,7 +129,7 @@ const Hero = () => {
           <span className="text-[13px] text-text-secondary">
             AI-powered incident summaries →
           </span>
-        </Link>
+        </div>
 
         {/* Hero Headline - PPT-Aligned */}
         <h1 className="text-center text-4xl leading-tight md:text-6xl mt-4 font-semibold max-w-3xl">

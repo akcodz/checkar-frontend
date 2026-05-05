@@ -9,6 +9,7 @@ const TestimonialSection = () => {
 
     const renderCard = (testimonial, index) => (
         <div
+        
             key={`${testimonial.id}-${index}`}
             className="group relative bg-bg-base rounded-card p-6 mb-4
                      hover:-translate-y-1 transition-all duration-500 cursor-default
