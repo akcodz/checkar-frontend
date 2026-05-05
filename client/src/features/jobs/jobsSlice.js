@@ -24,8 +24,8 @@ export const fetchLogs = createAsyncThunk(
 	async (id, { rejectWithValue }) => {
 		try {
 			const res = await jobsApi.getLogs(id);
-
-			return res?.data?.data || []; // ✅ extract logs array directly
+console.log(res);
+			return res?.data || []; // ✅ extract logs array directly
 		} catch (err) {
 			return rejectWithValue(err.response?.data || "Failed to fetch logs");
 		}
